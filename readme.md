@@ -302,3 +302,41 @@ local path before running the standalone workflow.
 - HTTP support is available out of the box.
 - For secure deployments, customers are expected to enable and configure TLS/HTTPS after creating the template repository under Helm charts.
 - While HTTP is supported, we strongly recommend using HTTPS for all production deployments.
+
+<!-- BEGIN GENERATED TOOL: rdbms-snowflake:AK_COUNTRY_AGENTIC_TOOL -->
+## Snowflake RDBMS Tool Configuration: `ak_country_agentic_tool`
+
+This generated tool uses tool-specific Snowflake configuration with the prefix `AK_COUNTRY_AGENTIC_TOOL`.
+
+The generated tool applies non-secret values from `supported_tools[].configuration` directly
+as generated defaults. Runtime environment variables with the prefix `AK_COUNTRY_AGENTIC_TOOL` override
+those non-secret defaults when provided. The PAT secret reference is always supplied only by
+`AK_COUNTRY_AGENTIC_TOOL_PAT_SECRET`.
+
+Generated default keys present: `none`.
+
+Generated SQL execution is unrestricted by this tool. SQL is sent to Snowflake as provided,
+and Snowflake permissions determine what succeeds.
+
+```env
+AK_COUNTRY_AGENTIC_TOOL_ACCOUNT=
+AK_COUNTRY_AGENTIC_TOOL_USER=
+AK_COUNTRY_AGENTIC_TOOL_PAT_SECRET=
+AK_COUNTRY_AGENTIC_TOOL_WAREHOUSE=
+AK_COUNTRY_AGENTIC_TOOL_DATABASE=
+AK_COUNTRY_AGENTIC_TOOL_SCHEMA=
+AK_COUNTRY_AGENTIC_TOOL_HOST=
+```
+
+`AK_COUNTRY_AGENTIC_TOOL_PAT_SECRET` is required at runtime and must contain the SecretsManager secret
+name for this tool's Snowflake PAT. This value is intentionally not read from
+`supported_tools[].configuration`. Do not store PAT secret names, PAT values, passwords,
+tokens, private keys, or connection strings in source code or payloads.
+
+The generated tool can discover authorized Snowflake metadata at runtime when called without
+a query. Use metadata scopes such as `databases`, `schemas`, `tables`, and `columns` to
+inspect allowed objects, then call the same tool with the required SQL query.
+
+Static table schema is not required in the supported tool payload. The generated tool relies
+on Snowflake metadata visible to the configured user.
+<!-- END GENERATED TOOL: rdbms-snowflake:AK_COUNTRY_AGENTIC_TOOL -->
