@@ -6,7 +6,14 @@ from crewai.agents.agent_builder.base_agent import BaseAgent
 from typing import List, Dict, Any
 from crewai import LLM
 from latest_ai_development.secrets_manager import SecretsManager
-from latest_ai_development.tracking import get_tracing_backend, instrument_llm_provider
+from latest_ai_development.tracking import instrument_llm_provider
+from latest_ai_development.tools import (
+    AkCountryAgenticToolTool,
+    CustomerSqlQueryTool,
+    ProductSqlQueryTool,
+    TavilyExtractTool,
+    TavilySearchTool,
+)
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -299,18 +306,37 @@ class LatestAiDevelopment():
     # Replace starter models with normalized design profile values.
     # Users select PROVIDER in the environment; do not put it in agent settings.
     AGENT_LLM_SETTINGS: Dict[str, Dict[str, Any]] = {
-        "researcher": {
-            "model": "gpt-4.1-mini",
-            "temperature": 0.1,
-            "top_p": 0.3,
-            "max_tokens": 4000,
+        # Primary generation defaults taken directly from the approved design.
+        "customer_data_agent": {
+            "model": "gpt-5.4-mini",
+            "temperature": 0.0,
+            "top_p": 0.0,
+            "max_tokens": 50000,
         },
-        "reporting_analyst": {
-            "model": "gpt-4.1-mini",
-            "temperature": 0.2,
-            "top_p": 0.8,
-            "max_tokens": 4000,
-        }
+        "product_data_agent": {
+            "model": "gpt-5.4-mini",
+            "temperature": 0.0,
+            "top_p": 0.0,
+            "max_tokens": 50000,
+        },
+        "geographic_reference_agent": {
+            "model": "gpt-5.4-mini",
+            "temperature": 0.0,
+            "top_p": 0.0,
+            "max_tokens": 50000,
+        },
+        "market_research_agent": {
+            "model": "gpt-5.4-mini",
+            "temperature": 0.0,
+            "top_p": 0.0,
+            "max_tokens": 50000,
+        },
+        "business_recommendation_agent": {
+            "model": "gpt-5.4-mini",
+            "temperature": 0.0,
+            "top_p": 0.0,
+            "max_tokens": 50000,
+        },
     }
 
     def _get_generation_param(
@@ -379,36 +405,91 @@ class LatestAiDevelopment():
 
 
     @agent
-    def researcher(self) -> Agent:
+    def customer_data_agent(self) -> Agent:
         return Agent(
-            config=self.agents_config['researcher'], # type: ignore[index]
+            config=self.agents_config['customer_data_agent'], # type: ignore[index]
             verbose=True,
-            llm=self._llm_for_agent("researcher"),
-
+            llm=self._llm_for_agent("customer_data_agent"),
+            tools=[CustomerSqlQueryTool()],
         )
 
     @agent
-    def reporting_analyst(self) -> Agent:
+    def product_data_agent(self) -> Agent:
         return Agent(
-            config=self.agents_config['reporting_analyst'], # type: ignore[index]
+            config=self.agents_config['product_data_agent'], # type: ignore[index]
             verbose=True,
-            llm=self._llm_for_agent("reporting_analyst"),
+            llm=self._llm_for_agent("product_data_agent"),
+            tools=[ProductSqlQueryTool()],
+        )
+
+    @agent
+    def geographic_reference_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config['geographic_reference_agent'], # type: ignore[index]
+            verbose=True,
+            llm=self._llm_for_agent("geographic_reference_agent"),
+            tools=[AkCountryAgenticToolTool()],
+        )
+
+    @agent
+    def market_research_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config['market_research_agent'], # type: ignore[index]
+            verbose=True,
+            llm=self._llm_for_agent("market_research_agent"),
+            tools=[TavilySearchTool(), TavilyExtractTool()],
+        )
+
+    @agent
+    def business_recommendation_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config['business_recommendation_agent'], # type: ignore[index]
+            verbose=True,
+            llm=self._llm_for_agent("business_recommendation_agent"),
         )
 
     # To learn more about structured task outputs,
     # task dependencies, and task callbacks, check out the documentation:
     # https://docs.crewai.com/concepts/tasks#overview-of-a-task
     @task
-    def research_task(self) -> Task:
+    def customer_data_agent_task(self) -> Task:
         return Task(
-            config=self.tasks_config['research_task'], # type: ignore[index]
+            config=self.tasks_config['customer_data_agent_task'], # type: ignore[index]
         )
 
     @task
-    def reporting_task(self) -> Task:
+    def product_data_agent_task(self) -> Task:
         return Task(
-            config=self.tasks_config['reporting_task'], # type: ignore[index]
-            output_file='/data/report.md'
+            config=self.tasks_config['product_data_agent_task'], # type: ignore[index]
+        )
+
+    @task
+    def geographic_reference_agent_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['geographic_reference_agent_task'], # type: ignore[index]
+        )
+
+    @task
+    def market_research_agent_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['market_research_agent_task'], # type: ignore[index]
+            context=[
+                self.customer_data_agent_task(),
+                self.product_data_agent_task(),
+                self.geographic_reference_agent_task(),
+            ],
+        )
+
+    @task
+    def business_recommendation_agent_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['business_recommendation_agent_task'], # type: ignore[index]
+            context=[
+                self.customer_data_agent_task(),
+                self.product_data_agent_task(),
+                self.geographic_reference_agent_task(),
+                self.market_research_agent_task(),
+            ],
         )
 
     @crew
@@ -418,13 +499,11 @@ class LatestAiDevelopment():
         # https://docs.crewai.com/concepts/knowledge#what-is-knowledge
 
         return Crew(
-            # When generating a use case, replace this literal with a concise name
-            # based on task_payload.json's design.summary (no requirement.title).
-            name="Research and Reporting Workflow",
+            # The crew name reflects the retail market intelligence system described in the design summary.
+            name="Retail Market Intelligence Crew",
             agents=self.agents, # Automatically created by the @agent decorator
             tasks=self.tasks, # Automatically created by the @task decorator
             process=Process.sequential,
             verbose=True,
-            tracing=get_tracing_backend() == "CREWAI",
-            # process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
+            tracing=True,
         )

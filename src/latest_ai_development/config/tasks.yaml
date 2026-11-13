@@ -1,18 +1,44 @@
-research_task:
+customer_data_agent_task:
   description: >
-    Conduct a thorough research about {topic}
-    Make sure you find any interesting and relevant information given
-    the current year is {current_year}.
+    Retrieve and validate internal customer demographic, geographic, and segmentation
+    data from Databricks using the customer_sql_query tool.
   expected_output: >
-    A list with 10 bullet points of the most relevant information about {topic}
-  agent: researcher
+    CustomerData containing validated customer demographic, geographic, and segmentation
+    information.
+  agent: customer_data_agent
 
-reporting_task:
+product_data_agent_task:
   description: >
-    Review the research context and write a concise report with short sections.
-    Focus on the 5 most important points only.
-    Keep the response compact, clear, and within a few paragraphs.
+    Retrieve and validate internal product portfolio data from Databricks using the
+    product_sql_query tool.
   expected_output: >
-    A concise markdown report covering the 5 most important findings with short sections.
-    Formatted as markdown without '```'
-  agent: reporting_analyst
+    ProductData consisting of detailed, validated product portfolio information.
+  agent: product_data_agent
+
+geographic_reference_agent_task:
+  description: >
+    Retrieve and validate geographic reference data such as country, ISO code,
+    region, sub-region, and intermediate region from ak_country using the
+    ak_country_agentic_tool.
+  expected_output: >
+    GeographicReferenceData capturing verified geographic metadata for enrichment.
+  agent: geographic_reference_agent
+
+market_research_agent_task:
+  description: >
+    Perform current retail market, competitor, and industry trend research using
+    tavily_search and tavily_extract to gather verified insights with source URLs.
+  expected_output: >
+    MarketResearchData summarizing external retail market trends, competitor
+    profiles, pricing signals, and verified source references.
+  agent: market_research_agent
+
+business_recommendation_agent_task:
+  description: >
+    Integrate CustomerData, ProductData, GeographicReferenceData, and
+    MarketResearchData to craft a comprehensive retail intelligence report with
+    actionable business recommendations.
+  expected_output: >
+    FinalReport containing an executive summary, detailed analyses, opportunity
+    assessment, and actionable business recommendations for retail leaders.
+  agent: business_recommendation_agent
